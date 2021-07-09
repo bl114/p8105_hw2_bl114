@@ -4,6 +4,10 @@ author: Ben Lebwohl
 output: github_document
 ---
 
+## Problem 1
+
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
