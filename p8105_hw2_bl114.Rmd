@@ -17,6 +17,7 @@ trash_wheel_df =
 read_excel("./data_files/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel", range= "A2:N406") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) 
+trash_wheel_df
 ```
 
 Round the number of sports balls to the nearest integer and converts the result to an integer variable 
@@ -27,6 +28,7 @@ trash_wheel_df %>%
   mutate (
   sports_balls = as.integer(sports_balls)
   )
+trash_wheel_df
 ```
 
 
@@ -52,6 +54,7 @@ combined_precip =
 bind_rows(precip_2017, precip_2018) %>%
   mutate(month = month.name[month]) %>%
   relocate(month, year)
+combined_precip
 ```
 
 For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017?
@@ -61,6 +64,6 @@ The total precipitation in 2018 was `r sum(precip_2018$total)` inches.
 
 The median number of sports balls in a dumpster in 2017 was  `r median(trash_wheel_df[year=2017]$sports_balls)`.
 
-
+## Problem 2
 
 
