@@ -16,13 +16,50 @@ library(readxl)
 trash_wheel_df = 
 read_excel("./data_files/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel", range= "A2:N406") %>% 
   janitor::clean_names() %>% 
-  drop_na(dumpster) %>% 
-  mutate(sports_balls = as.integer(sports_balls))
+  drop_na(dumpster) 
 ```
 
-Read and clean precipitation data for 2017 and 2018. For each, omit rows without precipitation data and add a variable year. Next, combine precipitation datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
+Round the number of sports balls to the nearest integer and converts the result to an integer variable 
 
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017?
+```{r}
+trash_wheel_df =
+trash_wheel_df %>% 
+  mutate (
+  sports_balls = as.integer(sports_balls)
+  )
+```
+
+
+Read and clean precipitation data for 2017 and 2018. For each, omit rows without precipitation data and add a variable year. 
+
+```{r}
+precip_2017 = 
+read_excel("./data_files/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2017 Precipitation", range= "A2:B14") %>% 
+  janitor::clean_names() %>% 
+  filter(total >0) %>% 
+  mutate(year = "2017")
+
+precip_2018 = 
+read_excel("./data_files/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2018 Precipitation", range= "A2:B14") %>% 
+  janitor::clean_names() %>% 
+  filter(total >0) %>% 
+  mutate(year = "2018")
+```
+
+Next, combine precipitation datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
+```{r}
+combined_precip = 
+bind_rows(precip_2017, precip_2018) %>%
+  mutate(month = month.name[month]) %>%
+  relocate(month, year)
+```
+
+For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017?
+
+The total precipitation in 2018 was `r sum(precip_2018$total)` inches.
+
+
+The median number of sports balls in a dumpster in 2017 was  `r median(trash_wheel_df[year=2017]$sports_balls)`.
 
 
 
