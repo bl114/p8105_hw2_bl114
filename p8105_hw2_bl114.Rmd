@@ -20,7 +20,7 @@ read_excel("./data_files/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr
 trash_wheel_df
 ```
 
-Round the number of sports balls to the nearest integer and converts the result to an integer variable 
+> Round the number of sports balls to the nearest integer and converts the result to an integer variable 
 
 ```{r}
 trash_wheel_df =
@@ -32,7 +32,7 @@ trash_wheel_df
 ```
 
 
-Read and clean precipitation data for 2017 and 2018. For each, omit rows without precipitation data and add a variable year. 
+> Read and clean precipitation data for 2017 and 2018. For each, omit rows without precipitation data and add a variable year. 
 
 ```{r}
 precip_2017 = 
@@ -48,7 +48,8 @@ read_excel("./data_files/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "20
   mutate(year = "2018")
 ```
 
-Next, combine precipitation datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
+> Next, combine precipitation datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
+
 ```{r}
 combined_precip = 
 bind_rows(precip_2017, precip_2018) %>%
@@ -57,7 +58,7 @@ bind_rows(precip_2017, precip_2018) %>%
 combined_precip
 ```
 
-For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017?
+> For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017?
 
 The total precipitation in 2018 was `r sum(precip_2018$total)` inches.
 
@@ -66,7 +67,7 @@ The median number of sports balls in a dumpster in 2017 was  `r median(trash_whe
 
 ## Problem 2
 
-Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable (the ifelse or recode function may be useful).
+>Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable (the ifelse or recode function may be useful).
 
 ```{r}
 transit_df = 
@@ -76,15 +77,78 @@ read_csv("./data_files/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   mutate(entry = ifelse(entry== "YES",T,F))
 ```
 
-Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
+> Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
 
 
 This data set contains a list of subway stations and their associated characteristics, including location (longitude and latitude), whether entry is available, and whether it is ADA-compliant. It is an 1868 by 19 dataset. It is not tidy, because the routes are listed as separate columns. 
 
-Answer the following questions using these data:
+_Answer the following questions using these data:_
 
-How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here.
+> How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here.
 
-How many stations are ADA compliant?
+```{r}
+nrow(distinct(transit_df,station_name))
+```
 
-What proportion of station entrances / exits without vending allow entrance?
+
+> How many stations are ADA compliant?
+
+Create a data set consisting of only distinct stations, and then count the number that ADA compliant:
+
+```{r}
+distinct_stations_df = 
+  transit_df %>%
+  distinct(station_name, .keep_all=TRUE)
+table(distinct_stations_df$ada)
+```
+
+> What proportion of station entrances / exits without vending allow entrance?
+
+Create a data set consisting of stations without vending, and then calculate the proportion that allow entrance:
+```{r}
+non_vending_df=
+transit_df %>%
+  filter(vending == "NO")
+prop.table(table(non_vending_df$entry))
+```
+
+>Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+
+```{r}
+transit_df_tidy = 
+  transit_df %>%
+  mutate_at(
+    c("route8","route9","route10","route11"), as.character
+    ) %>% 
+  pivot_longer(
+    cols = route1:route11, 
+    names_prefix = "route",
+    values_to = "route",
+    values_drop_na = TRUE
+  )
+transit_df_tidy =
+  select(transit_df_tidy,-name)
+  
+```
+
+The number of distinct stations that serve the A train:
+```{r}
+distinct_transit_df_tidy =
+  transit_df_tidy %>%
+  distinct(station_name, .keep_all=TRUE)
+table(distinct_transit_df_tidy$route)
+```
+
+48 stations serve the A train
+
+
+The number of A train stations that are ADA compliant:
+
+```{r}
+a_train_stations_df =
+  distinct_transit_df_tidy %>% 
+  filter(route =="A")
+table(a_train_stations_df$ada)
+```
+
+## Problem 3
