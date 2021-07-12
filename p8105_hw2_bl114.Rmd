@@ -152,3 +152,70 @@ table(a_train_stations_df$ada)
 ```
 
 ## Problem 3
+
+>First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
+
+```{r}
+pols_df=
+read_csv("./data_files/fivethirtyeight_datasets/pols-month.csv") %>% 
+separate("mon", c("year", "month", "day"), sep = "-") %>% 
+  mutate(month = as.numeric(month)) %>% 
+  mutate(month = month.name[month]) %>% 
+  mutate (pres= ifelse(prez_gop==1,"gop","dem"))
+pols_df=  
+select(pols_df, -prez_dem, -prez_gop, -day)
+```
+
+>Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+
+```{r}
+snp_df =
+  read_csv("./data_files/fivethirtyeight_datasets/snp.csv") %>% 
+separate("date", c("month", "day", "year"), sep = "/") %>% 
+  mutate(month = as.numeric(month)) %>% 
+  mutate(month = month.name[month])
+snp_df = select(snp_df, -day)
+snp_df= select(snp_df, year, everything())
+snp_df= arrange(snp_df,year)
+```
+
+>Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+
+
+```{r}
+unemployment_df =
+  read_csv("./data_files/fivethirtyeight_datasets/unemployment.csv") %>%
+  pivot_longer(
+    Jan:Dec, 
+    names_to = "month",
+    values_to = "unemployment"
+  ) %>% 
+  janitor::clean_names() %>% 
+  mutate(month = match(month, month.abb)) %>% 
+  mutate(month = month.name[month])
+```
+
+>Join the datasets by merging snp into pols, and merging unemployment into the result.
+
+```{r}
+merged538_df =
+  left_join(pols_df, snp_df, by =c("year","month"))
+```
+
+Convert the year variable in unemployment_df to a character variable
+```{r}
+  unemployment_df =
+  mutate(unemployment_df, year = as.character(year)
+  )
+```
+
+Merge the unemoloyment data into the main data set
+```{r}
+merged538_df =
+  left_join(unemployment_df, merged538_df, by = c("year","month"))
+merged538_df= select(merged538_df, year, month, unemployment, close, pres, everything())
+merged538_df
+```
+
+  
+
